@@ -155,63 +155,54 @@ class FirebaseManager {
         
         let storageRef = Storage.storage(url: STORAGE_URL).reference().child("\(user.name) - \(user.time.dropLast(10))")
         
-        let metadata = StorageMetadata()
-        
-        if let imageData = user.image.jpegData(compressionQuality: 1.0) {
-            metadata.contentType = "image/jpg"
-            print(metadata)
-            print(imageData)
-            //upload image to firebase storage
-            storageRef.putData(imageData, metadata: metadata, completion: {
-                (StorageMetadata, error) in
-                if error != nil {
-                    print(error?.localizedDescription as Any)
-                    completionHandler(error)
-                    return
-                }
-                else {
-                    storageRef.downloadURL(completion: {
-                        (url, error) in
-                        if let metaImageUrl = url?.absoluteString {
-                            let dict: Dictionary<String, Any>  = [
-                                "name": user.name,
-                                "imageURL": metaImageUrl,
-                                "time": user.time
-                            ]
-                            self.database.reference().child(LOG_TIME).child("\(user.name) - \(user.time.dropLast(10))").updateChildValues(dict, withCompletionBlock: {
-                                (error, ref) in
-                                if error == nil {
-                                    print("Uploaded log time.")
-                                    completionHandler(nil)
-                                }
-                            })
-                            
-                        }
-                    })
-                }
-            })
+        guard let imageData = user.image.jpegData(compressionQuality: 1.0) else {
+            return
         }
         
-        
-        
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/jpg"
+        print(metadata)
+        print(imageData)
+        //upload image to firebase storage
+        storageRef.putData(imageData, metadata: metadata, completion: {
+            (StorageMetadata, error) in
+            if error != nil {
+                print(error?.localizedDescription as Any)
+                completionHandler(error)
+                return
+            }
+
+            storageRef.downloadURL(completion: {
+                (url, error) in
+                guard let metaImageUrl = url?.absoluteString else {
+                    return
+                }
+                let dict: Dictionary<String, Any>  = [
+                    "name": user.name,
+                    "imageURL": metaImageUrl,
+                    "time": user.time
+                ]
+                self.database.reference().child(LOG_TIME).child("\(user.name) - \(user.time.dropLast(10))").updateChildValues(dict, withCompletionBlock: {
+                    (error, ref) in
+                    if error == nil {
+                        print("Uploaded log time.")
+                        completionHandler(nil)
+                    }
+                })
+            })
+        })
     }
     
     func loadUsers(completionHandler: @escaping ([String: Int]) -> Void) {
-        var userList: [String: Int] = [:]
         database.reference().child(USER_CHILD).queryLimited(toLast: 300).observeSingleEvent(of: .value, with: { (snapshot) in
-            if let data = snapshot.value as? [String: Any] {
-                userList = data as! [String: Int]
-                completionHandler(userList)
-                
+            if let data = snapshot.value as? [String: Int] {
+                completionHandler(data)
+            } else {
+                completionHandler([:])
             }
-            else {
-                completionHandler(userList)
-            }
-            
-        })
-        { (error) in
+        }) { (error) in
             print(error.localizedDescription)
-            completionHandler(userList)
+            completionHandler([:])
         }
     }
     
