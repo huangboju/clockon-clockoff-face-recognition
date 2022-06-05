@@ -46,10 +46,12 @@ class PreviewView: UIView {
         mask.opacity = 1
         mask.borderColor = UIColor.yellow.cgColor
         mask.borderWidth = 2.0
+        mask.contentsScale = UIScreen.main.scale
         
         let label = CATextLayer()
+        label.contentsScale = mask.contentsScale
         label.frame = rect
-        label.string = prediction
+        label.string = "    " + prediction
         label.fontSize = 20
         layer.addSublayer(label)
         
