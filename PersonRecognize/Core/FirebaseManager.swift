@@ -99,9 +99,7 @@ class FirebaseManager {
                 let dataArray = Array(data)
                 
                 let values = dataArray.compactMap { $0.1 as? [String: Any] }
-                for dict in values {
-                    let item = dict
-                    
+                for item in values {
                     guard let name = item["name"] as? String,
                           let vector = item["vector"] as? String,
                           let distance = item["distance"] as? Double
@@ -129,10 +127,9 @@ class FirebaseManager {
             if let data = snapshot.value as? [String: Any] {
                 let dataArray = Array(data)
                 
-                let values = dataArray.map { $0.1 }
-                for dict in values {
-                    let item = dict as! NSDictionary
-                    
+                let values = dataArray.compactMap { $0.1 as? [String: Any] }
+                for item in values {
+
                     guard let name = item["name"] as? String,
                           let vector = item["vector"] as? String,
                           let distance = item["distance"] as? Double
