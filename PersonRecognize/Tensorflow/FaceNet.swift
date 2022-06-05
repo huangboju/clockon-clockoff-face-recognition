@@ -34,9 +34,7 @@ final class FaceNet {
                             &buffer)
         if let buffer = buffer { CIContext().render(input, to: buffer) }
         guard let network_output = tfFacenet.run(onFrame: buffer) else { return [] }
-        let output = network_output.compactMap {
-            ($0 as? NSNumber)?.doubleValue
-        }
+        let output = network_output.compactMap { $0 as? Double }
         return output
     }
     
