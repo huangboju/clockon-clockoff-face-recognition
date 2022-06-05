@@ -105,6 +105,11 @@ extension UserData: UITableViewDelegate {
             self.value = valueSelected
             self.performSegue(withIdentifier: "viewFaceData", sender: nil)
         }))
+        alert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { action in
+            fb.deleteUser(name: valueSelected) {
+//                self.userList.remove(at: indexPath.row)
+            }
+        }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .destructive, handler: { action in
             
         }))

@@ -55,8 +55,9 @@ class VectorHelper  {
     func saveVector(_ vector: Vector) {
         let item = SavedVector()
         item.name = vector.name
-        item.vector = vector.vector
-        //print(vector.vector)
+        let list = List<Double>()
+        list.append(objectsIn: vector.vector)
+        item.vector = list
         item.distance = vector.distance
         
         try! realm.write {
@@ -69,7 +70,7 @@ class VectorHelper  {
         var vectors:[Vector] = []
         let items = realm.objects(SavedVector.self)
         for item in items {
-            let vector = Vector(name: item.name, vector: item.vector, distance: item.distance)
+            let vector = Vector(name: item.name, vector: item.vector.map { $0 }, distance: item.distance)
             vectors.append(vector)
         }
         return vectors

@@ -178,6 +178,15 @@ class FirebaseManager {
         })
     }
     
+    func deleteUser(name: String, completion: @escaping () -> Void) {
+        database.reference().child(USER_CHILD).child(name).removeValue { error, ref in
+            if error == nil {
+                print("delete user.")
+                completion()
+            }
+        }
+    }
+    
     var database: Database {
         return Database.database()
     }
