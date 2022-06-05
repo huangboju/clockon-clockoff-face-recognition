@@ -220,14 +220,7 @@ func getKMeanVector(vectors: [Vector]) -> [Vector] {
 
 
 func arrayToString(array: [Double]) -> String {
-    var str = ""
-    //print(array.count)
-    //print(array)
-    for item in array {
-        str += ",\(item)"
-    }
-    //print(str)
-    return str
+    return array.map { "\($0)" }.joined(separator: ",")
 }
 
 func stringToArray(string: String) -> [Double] {
