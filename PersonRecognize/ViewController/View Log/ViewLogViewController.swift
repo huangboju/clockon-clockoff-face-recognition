@@ -8,6 +8,7 @@
 
 import UIKit
 import ProgressHUD
+import Nuke
 
 class ViewLogViewController: UIViewController {
 
@@ -40,7 +41,7 @@ extension ViewLogViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cellID") as! LogTableViewCell
         if let url = URL(string: attendList[indexPath.row].imageURL) {
-            cell.imgView.sd_setImage(with: url, completed: nil)
+            cell.imgView.loadImage(with: url)
         }
         cell.nameLabel.text = attendList[indexPath.row].name
         cell.timeLabel.text = attendList[indexPath.row].time
@@ -49,5 +50,17 @@ extension ViewLogViewController: UITableViewDelegate, UITableViewDataSource {
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
+    }
+}
+
+extension UIImageView {
+    @discardableResult
+    public func loadImage(
+        with request: ImageRequestConvertible?,
+        options: ImageLoadingOptions = ImageLoadingOptions.shared,
+        progress: ((_ response: ImageResponse?, _ completed: Int64, _ total: Int64) -> Void)? = nil,
+        completion: ((_ result: Result<ImageResponse, ImagePipeline.Error>) -> Void)? = nil
+    ) -> ImageTask? {
+        return Nuke.loadImage(with: request, options: options, into: self, progress: progress, completion: completion)
     }
 }
