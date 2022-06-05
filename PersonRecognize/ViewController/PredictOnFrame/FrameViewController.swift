@@ -348,7 +348,7 @@ extension FrameViewController {
             }
             let detectedUser = User(name: label, image: frame, time: timestamp)
             if numberOfFramesDeteced > validFrames  {
-                print("Detected")
+//                print("Detected")
                 if localUserList.count == 0 {
                     print("append 1")
                     speak(name: label)
@@ -371,7 +371,7 @@ extension FrameViewController {
                         if item.name == label {
                             if let time = formatter.date(from: item.time) {
                                 let diff = abs(time.timeOfDayInterval(toDate: today))
-                                print("Diffrent: \(diff) seconds")
+//                                print("Diffrent: \(diff) seconds")
                                 if Int(diff) > VALID_TIME {
                                     print("append 2")
                                     localUserList.append(detectedUser)

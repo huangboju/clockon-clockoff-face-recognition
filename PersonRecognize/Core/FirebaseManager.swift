@@ -10,7 +10,7 @@ import Foundation
 import Firebase
 import FirebaseDatabase
 import FirebaseStorage
-import SDWebImage
+import Nuke
 
 class FirebaseManager {
     init() {
@@ -27,7 +27,7 @@ class FirebaseManager {
                 "distance": vector.distance
             ]
             let childString = "\(vector.name) - \(i)"
-            Database.database().reference().child(child).child(vector.name).child(childString).updateChildValues(dict, withCompletionBlock: {
+            database.reference().child(child).child(vector.name).child(childString).updateChildValues(dict, withCompletionBlock: {
                 (error, ref) in
                 if error == nil {
                     print("uploaded vector")
@@ -48,7 +48,7 @@ class FirebaseManager {
                 "distance": vector.distance
             ]
             let childString = "\(vector.name) - \(i)"
-            Database.database().reference().child(child).child(childString).updateChildValues(dict, withCompletionBlock: {
+            database.reference().child(child).child(childString).updateChildValues(dict, withCompletionBlock: {
                 (error, ref) in
                 if error == nil {
                     print("uploaded vector")
@@ -60,7 +60,7 @@ class FirebaseManager {
     
     func loadLogTimes(completionHandler: @escaping ([Users]) -> Void) {
         var attendList: [Users] = []
-        Database.database().reference().child(LOG_TIME).queryLimited(toLast: 1000).observeSingleEvent(of: .value, with: { (snapshot) in
+        database.reference().child(LOG_TIME).queryLimited(toLast: 1000).observeSingleEvent(of: .value, with: { (snapshot) in
             if let data = snapshot.value as? [String: Any] {
                 let dataArray = Array(data)
                 let values = dataArray.map { $0.1 }
@@ -91,14 +91,16 @@ class FirebaseManager {
     
     func loadVector(completionHandler: @escaping ([Vector]) -> Void) {
         var vectors = [Vector]()
-        Database.database().reference().child(KMEAN_VECTOR).queryLimited(toLast: 1000).observeSingleEvent(of: .value, with: { (snapshot) in
+        database.reference().child(KMEAN_VECTOR).queryLimited(toLast: 1000).observeSingleEvent(of: .value, with: { (snapshot) in
             
             if let data = snapshot.value as? [String: Any] {
+//                print(data.json())
+
                 let dataArray = Array(data)
                 
-                let values = dataArray.map { $0.1 }
+                let values = dataArray.compactMap { $0.1 as? [String: Any] }
                 for dict in values {
-                    let item = dict as! NSDictionary
+                    let item = dict
                     
                     guard let name = item["name"] as? String,
                           let vector = item["vector"] as? String,
@@ -122,7 +124,7 @@ class FirebaseManager {
     
     func loadAllVector(name: String, completionHandler: @escaping ([Vector]) -> Void) {
         var vectors = [Vector]()
-        Database.database().reference().child(ALL_VECTOR).child(name).queryLimited(toLast: 1000).observeSingleEvent(of: .value, with: { (snapshot) in
+        database.reference().child(ALL_VECTOR).child(name).queryLimited(toLast: 1000).observeSingleEvent(of: .value, with: { (snapshot) in
             
             if let data = snapshot.value as? [String: Any] {
                 let dataArray = Array(data)
@@ -154,7 +156,7 @@ class FirebaseManager {
     
     func uploadLogTimes(user: User, completionHandler: @escaping (Error?) -> Void) {
         
-        let storageRef = Storage.storage().reference(forURL: STORAGE_URL).child("\(user.name) - \(user.time.dropLast(10))")
+        let storageRef = Storage.storage(url: STORAGE_URL).reference().child("\(user.name) - \(user.time.dropLast(10))")
         
         let metadata = StorageMetadata()
         
@@ -179,7 +181,7 @@ class FirebaseManager {
                                 "imageURL": metaImageUrl,
                                 "time": user.time
                             ]
-                            Database.database().reference().child(LOG_TIME).child("\(user.name) - \(user.time.dropLast(10))").updateChildValues(dict, withCompletionBlock: {
+                            self.database.reference().child(LOG_TIME).child("\(user.name) - \(user.time.dropLast(10))").updateChildValues(dict, withCompletionBlock: {
                                 (error, ref) in
                                 if error == nil {
                                     print("Uploaded log time.")
@@ -199,7 +201,7 @@ class FirebaseManager {
     
     func loadUsers(completionHandler: @escaping ([String: Int]) -> Void) {
         var userList: [String: Int] = [:]
-        Database.database().reference().child(USER_CHILD).queryLimited(toLast: 300).observeSingleEvent(of: .value, with: { (snapshot) in
+        database.reference().child(USER_CHILD).queryLimited(toLast: 300).observeSingleEvent(of: .value, with: { (snapshot) in
             if let data = snapshot.value as? [String: Any] {
                 userList = data as! [String: Int]
                 completionHandler(userList)
@@ -215,14 +217,35 @@ class FirebaseManager {
             completionHandler(userList)
         }
     }
+    
+
     func uploadUser(name: String, user_id: Int, completionHandler: @escaping () -> Void) {
         let dict = [name : user_id]
-        Database.database().reference().child(USER_CHILD).updateChildValues(dict, withCompletionBlock: {
+        database.reference().child(USER_CHILD).updateChildValues(dict, withCompletionBlock: {
             (error, ref) in
             if error == nil {
                 print("update user.")
             }
             completionHandler()
         })
+    }
+    
+    var database: Database {
+        return Database.database()
+    }
+}
+
+public extension Collection {
+    
+    /// Convert self to JSON String.
+    /// Returns: the pretty printed JSON string or an empty string if any error occur.
+    func json() -> String {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: self, options: [.prettyPrinted])
+            return String(data: jsonData, encoding: .utf8) ?? "{}"
+        } catch {
+            print("json serialization error: \(error)")
+            return "{}"
+        }
     }
 }
