@@ -24,6 +24,27 @@ extension Vector {
                   vector: vector,
                   distance: 0)
     }
+    
+    init?(item: [String: Any]) {
+        guard let name = item["name"] as? String,
+              let vector = item["vector"] as? String,
+              let distance = item["distance"] as? Double
+        else {
+            print("Error at get vectors")
+            return nil
+        }
+        self.name = name
+        self.vector = stringToArray(string: vector)
+        self.distance = distance
+    }
+    
+    var dict: [String: Any] {
+        return [
+            "name": name,
+            "vector": arrayToString(array: vector),
+            "distance": distance
+        ]
+    }
 }
 extension Sequence where Iterator.Element: Hashable {
     func uniq() -> [Iterator.Element] {

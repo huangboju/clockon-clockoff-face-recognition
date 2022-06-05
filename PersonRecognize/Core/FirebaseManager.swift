@@ -18,14 +18,8 @@ class FirebaseManager {
     }
     
     func uploadAllVectors(vectors: [Vector], child: String, completionHandler: @escaping () -> Void) {
-        
-        for i in 0..<vectors.count {
-            let vector = vectors[i]
-            let dict: Dictionary<String, Any>  = [
-                "name": vector.name,
-                "vector": arrayToString(array: vector.vector),
-                "distance": vector.distance
-            ]
+        for (i, vector) in vectors.enumerated() {
+            let dict = vector.dict
             let childString = "\(vector.name) - \(i)"
             database.reference().child(child).child(vector.name).child(childString).updateChildValues(dict, withCompletionBlock: {
                 (error, ref) in
@@ -34,19 +28,13 @@ class FirebaseManager {
                 }
                 completionHandler()
             })
-            
-            
         }
     }
+
     func uploadKMeanVectors(vectors: [Vector], child: String, completionHandler: @escaping () -> Void) {
         
-        for i in 0..<vectors.count {
-            let vector = vectors[i]
-            let dict: Dictionary<String, Any>  = [
-                "name": vector.name,
-                "vector": arrayToString(array: vector.vector),
-                "distance": vector.distance
-            ]
+        for (i, vector) in vectors.enumerated() {
+            let dict = vector.dict
             let childString = "\(vector.name) - \(i)"
             database.reference().child(child).child(childString).updateChildValues(dict, withCompletionBlock: {
                 (error, ref) in
@@ -61,27 +49,25 @@ class FirebaseManager {
     func loadLogTimes(completionHandler: @escaping ([Users]) -> Void) {
         var attendList: [Users] = []
         database.reference().child(LOG_TIME).queryLimited(toLast: 1000).observeSingleEvent(of: .value, with: { (snapshot) in
-            if let data = snapshot.value as? [String: Any] {
-                let dataArray = Array(data)
-                let values = dataArray.map { $0.1 }
-                for dict in values {
-                    let item = dict as! NSDictionary
-                    guard let name = item["name"] as? String,
-                          let imgUrl = item["imageURL"] as? String,
-                          let time = item["time"] as? String
-                    else {
-                        print("Error at get log times.")
-                        continue
-                    }
-                    let object = Users(name: name, imageURL: imgUrl, time: time)
-                    attendList.append(object)
-                }
-                completionHandler(attendList.sorted(by: { $0.time > $1.time }))
-            }
-            else {
+            guard let data = snapshot.value as? [String: Any] else {
                 completionHandler(attendList)
+                return
             }
-            
+            let dataArray = Array(data)
+            let values = dataArray.compactMap { $0.1 as? [String: Any] }
+            for item in values {
+                guard let name = item["name"] as? String,
+                      let imgUrl = item["imageURL"] as? String,
+                      let time = item["time"] as? String
+                else {
+                    print("Error at get log times.")
+                    continue
+                }
+                let object = Users(name: name, imageURL: imgUrl, time: time)
+                attendList.append(object)
+            }
+            completionHandler(attendList.sorted(by: { $0.time > $1.time }))
+
         }) { (error) in
             print(error.localizedDescription)
             completionHandler(attendList)
@@ -97,20 +83,8 @@ class FirebaseManager {
 //                print(data.json())
 
                 let dataArray = Array(data)
-                
-                let values = dataArray.compactMap { $0.1 as? [String: Any] }
-                for item in values {
-                    guard let name = item["name"] as? String,
-                          let vector = item["vector"] as? String,
-                          let distance = item["distance"] as? Double
-                    else {
-                        print("Error at get vectors")
-                        continue
-                    }
-                    let object = Vector(name: name, vector: stringToArray(string: vector), distance: distance)
-                    vectors.append(object)
-                }
-                
+                let values = dataArray.compactMap { $0.1 as? [String: Any] }.compactMap { Vector(item: $0) }
+                vectors.append(contentsOf: values)
             }
             completionHandler(vectors)
             
@@ -126,21 +100,9 @@ class FirebaseManager {
             
             if let data = snapshot.value as? [String: Any] {
                 let dataArray = Array(data)
-                
-                let values = dataArray.compactMap { $0.1 as? [String: Any] }
-                for item in values {
 
-                    guard let name = item["name"] as? String,
-                          let vector = item["vector"] as? String,
-                          let distance = item["distance"] as? Double
-                    else {
-                        print("Error at get vectors")
-                        continue
-                    }
-                    let object = Vector(name: name, vector: stringToArray(string: vector), distance: distance)
-                    vectors.append(object)
-                }
-                
+                let values = dataArray.compactMap { $0.1 as? [String: Any] }.compactMap { Vector(item: $0) }
+                vectors.append(contentsOf: values)
             }
             completionHandler(vectors)
             
