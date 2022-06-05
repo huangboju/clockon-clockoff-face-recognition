@@ -161,8 +161,6 @@ class FirebaseManager {
         
         let metadata = StorageMetadata()
         metadata.contentType = "image/jpg"
-        print(metadata)
-        print(imageData)
         //upload image to firebase storage
         storageRef.putData(imageData, metadata: metadata, completion: {
             (StorageMetadata, error) in
