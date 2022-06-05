@@ -106,7 +106,7 @@ class HomeViewController: UIViewController {
             print(result.count)
             kMeanVectors = []
             for vector in result {
-                let v = Vector(name: vector.name, vector: stringToArray(string: vector.vector), distance: vector.distance)
+                let v = Vector(name: vector.name, vector: vector.vector, distance: vector.distance)
                 kMeanVectors.append(v)
             }
             vectorsLabel.text = "You have \(kMeanVectors.count / NUMBER_OF_K) users."

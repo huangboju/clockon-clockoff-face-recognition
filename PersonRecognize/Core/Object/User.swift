@@ -26,6 +26,6 @@ struct Users: Codable {
 
 class SavedVector: Object {
     @objc dynamic var name: String = ""
-    @objc dynamic var vector: String = ""
+    @objc dynamic var vector: [Double] = []
     @objc dynamic var distance: Double = 0
 }

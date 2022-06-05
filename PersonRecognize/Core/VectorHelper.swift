@@ -55,7 +55,7 @@ class VectorHelper  {
     func saveVector(_ vector: Vector) {
         let item = SavedVector()
         item.name = vector.name
-        item.vector = arrayToString(array: vector.vector)
+        item.vector = vector.vector
         //print(vector.vector)
         item.distance = vector.distance
         
@@ -69,7 +69,7 @@ class VectorHelper  {
         var vectors:[Vector] = []
         let items = realm.objects(SavedVector.self)
         for item in items {
-            let vector = Vector(name: item.name, vector: stringToArray(string: item.vector), distance: item.distance)
+            let vector = Vector(name: item.name, vector: item.vector, distance: item.distance)
             vectors.append(vector)
         }
         return vectors
@@ -217,21 +217,3 @@ func getKMeanVector(vectors: [Vector]) -> [Vector] {
     }
     return vectorList
 }
-
-
-func arrayToString(array: [Double]) -> String {
-    return array.map { "\($0)" }.joined(separator: ",")
-}
-
-func stringToArray(string: String) -> [Double] {
-    var vector: [Double] = []
-    var array = string.components(separatedBy: ",")
-    array.removeFirst()
-    //print(array.count)
-    for item in array {
-        //print(item)
-        vector.append(Double(item)!)
-    }
-    return vector
-}
-

@@ -27,21 +27,21 @@ extension Vector {
     
     init?(item: [String: Any]) {
         guard let name = item["name"] as? String,
-              let vector = item["vector"] as? String,
+              let vector = item["vector"] as? [Double],
               let distance = item["distance"] as? Double
         else {
             print("Error at get vectors")
             return nil
         }
         self.name = name
-        self.vector = stringToArray(string: vector)
+        self.vector = vector
         self.distance = distance
     }
     
     var dict: [String: Any] {
         return [
             "name": name,
-            "vector": arrayToString(array: vector),
+            "vector": vector,
             "distance": distance
         ]
     }
